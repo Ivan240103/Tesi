@@ -1,6 +1,8 @@
 [submodule "iam-dashboard"]
 	path = iam-dashboard
 	url = https://github.com/Ivan240103/iam-dashboard.git
+	branch = m-tls
 [submodule "iam"]
 	path = iam
 	url = https://github.com/Ivan240103/iam.git
+	branch = m-tls
