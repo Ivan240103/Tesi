@@ -1,0 +1,6 @@
+[submodule "iam-dashboard"]
+	path = iam-dashboard
+	url = https://github.com/Ivan240103/iam-dashboard.git
+[submodule "iam"]
+	path = iam
+	url = https://github.com/Ivan240103/iam.git
