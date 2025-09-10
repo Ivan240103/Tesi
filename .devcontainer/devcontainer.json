@@ -1,0 +1,33 @@
+{
+  "name": "Tesi Ivan",
+  "dockerComposeFile": [
+    "../docker-compose.yaml",
+    "docker-compose.extend.yaml"
+  ],
+  "service": "dashboard-devcontainer",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "git": "os-provided"
+  },
+  "postCreateCommand": "git config --global --add safe.directory /workspace && rm /workspace/.env && cp /secrets/.env /workspace/.env",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "remote.autoForwardPorts": false,
+        "extensions.verifySignature": false // need for macOS users https://github.com/microsoft/vscode-remote-release/issues/8169
+      },
+      "extensions": [
+        "wayou.vscode-todo-highligh",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "msjsdiag.vscode-react-native",
+        "ms-vscode.vscode-typescript-next",
+        "GitHub.vscode-github-actions",
+        "streetsidesoftware.code-spell-checker",
+        "SonarSource.sonarlint-vscode"
+      ]
+    }
+  },
+  "shutdownAction": "stopCompose",
+  "remoteUser": "node"
+}

@@ -22,22 +22,22 @@ services:
     volumes:
       - iam-db:/var/lib/mysql
 
-  # client_registrant:
-  #   container_name: iam-client-registrant
-  #   entrypoint: /entrypoint.sh
-  #   depends_on:
-  #     - database
-  #   image: mysql:latest
-  #   environment:
-  #     TZ: Europe/Rome
-  #     MYSQL_USER: iam
-  #     MYSQL_PASSWORD: pwd
-  #     MYSQL_DATABASE: iam
-  #   volumes:
-  #     - ./register_client.sh:/entrypoint.sh
-  #     - ./register_client.sql:/register_client.sql
-  #     - ./.template.env:/.template.env
-  #     - secrets:/secrets
+  client_registrant:
+    container_name: iam-client-registrant
+    entrypoint: /entrypoint.sh
+    depends_on:
+      - database
+    image: mysql:latest
+    environment:
+      TZ: Europe/Rome
+      MYSQL_USER: iam
+      MYSQL_PASSWORD: pwd
+      MYSQL_DATABASE: iam
+    volumes:
+      - ./iam-dashboard/register_client.sh:/entrypoint.sh
+      - ./iam-dashboard/register_client.sql:/register_client.sql
+      - ./iam-dashboard/.template.env:/.template.env
+      - secrets:/secrets
 
   login_service:
     container_name: iam-login-service
@@ -76,16 +76,16 @@ services:
       context: ./iam-dashboard/
       args:
         NEXT_PUBLIC_BASE_PATH: /ui
-    # entrypoint: "/entrypoint.sh"
+    entrypoint: "/entrypoint.sh"
     command: ["node", "server.js"]
     volumes:
       - secrets:/app
-      # - ./iam-dashboard/wait_for_env.sh:/entrypoint.sh
+      - ./iam-dashboard/wait_for_env.sh:/entrypoint.sh
     depends_on:
       login_service:
         condition: service_healthy
-      # client_registrant:
-      #   condition: service_completed_successfully
+      client_registrant:
+        condition: service_completed_successfully
 
   nginx:
     image: nginx:1.24.0
