@@ -1,2 +1,9 @@
 # VSCode settings
 .vscode/
+
+# secrets
+.env*.local
+.devcontainer/devcontainer.env
+*.env
+*.env*
+nginx/conf.d/env/*.conf
