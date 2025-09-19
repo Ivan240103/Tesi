@@ -1,4 +1,5 @@
 services:
+
   database:
     container_name: iam-database
     image: mysql:latest
@@ -22,32 +23,20 @@ services:
     volumes:
       - iam-db:/var/lib/mysql
 
-  client_registrant:
-    container_name: iam-client-registrant
-    entrypoint: /entrypoint.sh
-    depends_on:
-      - database
-    image: mysql:latest
-    environment:
-      TZ: Europe/Rome
-      MYSQL_USER: iam
-      MYSQL_PASSWORD: pwd
-      MYSQL_DATABASE: iam
-    volumes:
-      - ./iam-dashboard/register_client.sh:/entrypoint.sh
-      - ./iam-dashboard/register_client.sql:/register_client.sql
-      - ./iam-dashboard/.template.env:/.template.env
-      - secrets:/secrets
-
-  login_service:
-    container_name: iam-login-service
-    image: indigoiam/iam-login-service:latest
-    restart: unless-stopped
+  dev:
+    container_name: iam-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sleep infinity
     depends_on:
       database:
         condition: service_healthy
+    volumes:
+      - .:/workspace
+      - ./iam-dashboard/json-keystore.jwks:/keys/json-keystore.jwks:ro
     environment:
-      IAM_JAVA_OPTS: -Dspring.profiles.active=mysql-test,oidc,registration
+      NEXT_PUBLIC_BASE_PATH: /ui
       TZ: Europe/Rome
       IAM_PORT: 8080
       IAM_HOST: iam.test.example
@@ -58,46 +47,21 @@ services:
       IAM_DB_USERNAME: iam
       IAM_DB_PASSWORD: pwd
       IAM_DB_HOST: database
-      IAM_DATABASE_SHOW_SQL: "false"
+      IAM_DATABASE_SHOW_SQL: false
       IAM_REGISTRATION_AUTHENTICATION_TYPE: oidc
-      IAM_ACCESS_TOKEN_INCLUDE_SCOPE: "true"
-      IAM_SCIM_INCLUDE_AUTHORITIES: "true"
+      IAM_ACCESS_TOKEN_INCLUDE_SCOPE: true
+      IAM_SCIM_INCLUDE_AUTHORITIES: true
       IAM_REGISTRATION_OIDC_ISSUER: ${REGISTRATION_OIDC_ISSUER:-https://example.org}
       IAM_ORGANISATION_NAME: cnafsd
-    healthcheck:
-      test: [CMD, "curl", "-f", "http://localhost:8080/actuator/health"]
-    volumes:
-      - ./iam-dashboard/json-keystore.jwks:/keys/json-keystore.jwks:ro
-
-  dashboard:
-    container_name: iam-dashboard
-    image: iam-dashboard
-    build:
-      context: ./iam-dashboard/
-      args:
-        NEXT_PUBLIC_BASE_PATH: /ui
-    entrypoint: "/entrypoint.sh"
-    command: ["node", "server.js"]
-    volumes:
-      - secrets:/app
-      - ./iam-dashboard/wait_for_env.sh:/entrypoint.sh
-    depends_on:
-      login_service:
-        condition: service_healthy
-      client_registrant:
-        condition: service_completed_successfully
 
   nginx:
     image: nginx:1.24.0
     container_name: iam-nginx
-    hostname: iam.test.example
     restart: unless-stopped
-    depends_on:
-      dashboard:
-        condition: service_started
-      login_service:
-        condition: service_healthy
     command: ["nginx-debug", "-g", "daemon off;"]
+    depends_on:
+      dev:
+        condition: service_started
     ports:
       - "8080:8080"
     volumes:
@@ -106,4 +70,3 @@ services:
 
 volumes:
   iam-db:
-  secrets:
