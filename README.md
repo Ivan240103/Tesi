@@ -22,7 +22,7 @@ To run iam-login-service (with sql profile):
 docker exec -it iam-dev bash
 cd workspace/iam/
 mvn clean install -DskipTests
-mvn -pl iam-login-service -am spring-boot:run -Dspring.profiles.active=mysql-test,oidc,registration
+mvn -pl iam-login-service -am spring-boot:run -Dspring.profiles.active=mysql-test,oidc,dev
 ```
 
 ### Create client

@@ -1,15 +1,12 @@
 {
-  "name": "Tesi Ivan",
-  "dockerComposeFile": [
-    "../docker-compose.yaml",
-    "docker-compose.extend.yaml"
-  ],
-  "service": "dashboard-devcontainer",
-  "workspaceFolder": "/workspace",
+  "name": "Dashboard-devcontainer",
+  "dockerComposeFile": ["../../docker-compose.yaml"],
+  "service": "dev",
+  "workspaceFolder": "/workspace/iam-dashboard",
+  "postCreateCommand": "npm install",
   "features": {
     "git": "os-provided"
   },
-  "postCreateCommand": "git config --global --add safe.directory /workspace && rm /workspace/.env && cp /secrets/.env /workspace/.env",
   "customizations": {
     "vscode": {
       "settings": {
@@ -28,6 +25,5 @@
       ]
     }
   },
-  "shutdownAction": "stopCompose",
-  "remoteUser": "node"
+  "shutdownAction": "none"
 }
