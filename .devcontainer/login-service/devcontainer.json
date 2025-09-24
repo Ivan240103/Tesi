@@ -20,7 +20,7 @@
     }
   },
   "containerEnv": {
-    "SPRING_PROFILES_ACTIVE": "mysql-test,oidc,dev"
+    "SPRING_PROFILES_ACTIVE": "mysql-test"
   },
   "shutdownAction": "none"
 }
