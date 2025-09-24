@@ -1,6 +1,9 @@
 # VSCode settings
 .vscode/
 
+# CA scripts
+helper-scripts/
+
 # secrets
 .env*.local
 .devcontainer/devcontainer.env
