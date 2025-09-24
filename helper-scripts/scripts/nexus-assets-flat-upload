@@ -1,0 +1,71 @@
+#!/bin/bash
+set -e
+
+if [ -n "$NX_VERBOSE" ]; then
+  set -x
+fi
+
+usage(){
+    echo "Usage: $0 [option]" >&2
+    echo
+    echo "   -h, --help           show this help"
+    echo "   -u, --username       username for basic authentication"
+    echo "   -p, --password       password for basic authentication"
+    echo "   -H, --baseurl        URL of Nexus instance "
+    echo "   -r, --reponame       name of the repository where to put artifacts "
+    echo "   -d, --directory      name of the source directory containing the artifacts "
+    echo "   -f, --form           use form content-type"
+    echo
+}
+
+while getopts ":hu:p:H:r:d:f" opt; do
+  case $opt in
+    h | --help) usage; exit 0 >&2;;
+    u | --username) username=$OPTARG;;
+    p | --password) password=$OPTARG;;
+    H | --baseurl) baseurl=$OPTARG;;
+    r | --reponame) reponame=$OPTARG;;
+    d | --directory) directory=$OPTARG;;
+    f | --form) use_form='y';;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+dirname=`basename ${directory}`
+parentdir=`dirname ${directory}`
+
+curl_opts=${NX_CURL_OPTS:-"-s"}
+
+cd ${parentdir}
+
+for file in `find ${dirname} -type f`; do 
+  xfer_opts="${curl_opts} -w %{http_code} --user ${username}:${password}"
+
+  if [ -n "${use_form}" ]; then
+    target="${baseurl}/repository/${reponame}/"
+    echo -n "${file} -> ${target}: ..."
+    output=$(curl ${xfer_opts} -X POST -H 'Content-Type: multipart/form-data' --data-binary "@${file}" ${target} || : )
+  else 
+    target="${baseurl}/repository/${reponame}/$(basename ${file})"
+    echo -n "${file} -> ${target}: ..."
+    output=$(curl ${xfer_opts} --upload-file ${file} ${target} | tail -1 || : )
+  fi
+
+  result=$(echo ${output} | tail -1)
+
+  if [[ ! ${result} == 20* ]]; then
+    echo -n "Transfer error!"
+    echo ${output}
+    exit 1
+  fi
+
+  echo "${result}"
+
+done

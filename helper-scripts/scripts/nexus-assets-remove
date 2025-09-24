@@ -1,0 +1,47 @@
+#!/bin/bash
+
+#set -xe
+
+usage(){
+    echo "Usage: $0 [option]" >&2
+    echo
+    echo "   -h, --help           show this help"
+    echo "   -u, --username       username for basic authentication"
+    echo "   -p, --password       password for basic authentication"
+    echo "   -H, --baseurl        URL of Nexus instance "
+    echo "   -r, --reponame       name of the repository "
+    echo "   -q, --query          string to search to filter the results "
+    echo
+}
+
+while getopts ":hu:p:H:r:q:" opt; do
+  case $opt in
+    h | --help) usage; exit 0 >&2;;
+    u | --username) username=$OPTARG;;
+    p | --password) password=$OPTARG;;
+    H | --baseurl) baseurl=$OPTARG;;
+    r | --reponame) reponame=$OPTARG;;
+    q | --query) filter=$OPTARG;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+url=${baseurl}/service/rest/v1/script/repoassetslister/run
+list=`curl -s -XPOST -u ${username}:${password} ${url} \
+   -H "Content-Type: text/plain" \
+   -d "{\"repoName\":\"${reponame}\", \"startDate\":\"1970-01-01\"}" \
+   | jq .result | tr ',' '\n' | grep ${filter} | tr -d '\\\"[]{}' | sed s#assets:##g` 
+
+
+for elem in $list; do
+    result=`curl -s -I -XDELETE -u ${username}:${password} ${baseurl}${elem} | head -n1`
+    echo "${elem} -> ${result}"
+done
+

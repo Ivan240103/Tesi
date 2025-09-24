@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -xe
+
+usage(){
+    echo "Usage: $0 [option]" >&2
+    echo
+    echo "   -h, --help           show this help"
+    echo "   -u, --username       username for basic authentication"
+    echo "   -p, --password       password for basic authentication"
+    echo "   -H, --baseurl        URL of Nexus instance "
+    echo "   -r, --reponame       name of the repository where to put artifacts "
+    echo "   -d, --directory      name of the source directorty containing the artifacts "
+    echo
+}
+
+while getopts ":hu:p:H:r:d:" opt; do
+  case $opt in
+    h | --help) usage; exit 0 >&2;;
+    u | --username) username=$OPTARG;;
+    p | --password) password=$OPTARG;;
+    H | --baseurl) baseurl=$OPTARG;;
+    r | --reponame) reponame=$OPTARG;;
+    d | --directory) directory=$OPTARG;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+dirname=`basename ${directory}`
+parentdir=`dirname ${directory}`
+
+cd ${parentdir}
+for file in `find ${dirname} -type f`; do 
+	result=`curl -s -I --user ${username}:${password} --upload-file ${file} ${baseurl}/repository/${reponame}/${file} | head -n1`
+	echo "${file} -> ${result}"
+done

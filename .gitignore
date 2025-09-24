@@ -2,7 +2,7 @@
 .vscode/
 
 # CA scripts
-helper-scripts/
+helper-scripts/x509-scripts/*_ca
 
 # secrets
 .env*.local
