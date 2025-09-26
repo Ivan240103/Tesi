@@ -38,6 +38,7 @@ services:
       - m2:/root/.m2
     environment:
       NEXT_PUBLIC_BASE_PATH: /ui
+      NODE_OPTIONS: --use-openssl-ca
       TZ: Europe/Rome
       IAM_BASE_URL: https://iam.test.example:8443
       IAM_ISSUER: https://iam.test.example:8443
