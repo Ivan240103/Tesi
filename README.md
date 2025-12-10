@@ -17,7 +17,7 @@ npm install
 npm run dev
 ```
 
-To run iam-login-service (with sql profile):
+To run iam-login-service:
 ```bash
 docker exec -it iam-dev bash
 cd workspace/iam/
